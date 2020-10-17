@@ -5,6 +5,6 @@
 
 ## Project setup
 ```
-- pip install pytbube3
+- pip install pytube3
 - pip install PyQt5
 ```
