@@ -31,7 +31,7 @@ class Window(QMainWindow):
         self.link.setPlaceholderText("https://www.youtube.com/enterurl")
         buttonDownload = QPushButton("Download", self)
         buttonDownload.clicked.connect(self.download)
-        buttonDownload.setGeometry(50,50,50,50)
+        buttonDownload.setGeometry(50, 50, 50, 50)
         v_box.addWidget(title)
 
         # içeriklerin atanması
@@ -58,8 +58,8 @@ class Window(QMainWindow):
         contentText = "Download Complete!"
         url = self.link.text()
         # video kalilesi
-        res = "240p"
-        video=YouTube(url).streams.filter(res=res).first().download()
+        res = "1080p"
+        video = YouTube(url).streams.filter(res=res).first().download()
         if (YouTube):
             QMessageBox.information(self, title, contentText)
 
