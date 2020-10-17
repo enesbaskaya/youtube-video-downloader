@@ -1,7 +1,7 @@
 # youtube-downloader
 
 ## Project
-![](youtubeDownloader.png)
+![](youtubedownloader.png)
 
 ## Project setup
 ```
