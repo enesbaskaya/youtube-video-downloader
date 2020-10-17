@@ -6,8 +6,6 @@ from pytube import YouTube
 __author__ = "enesbaskaya"
 
 
-
-
 class Window(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -22,19 +20,25 @@ class Window(QMainWindow):
     def contentUI(self):
         widget = QWidget()
         h_box = QHBoxLayout()
+        v_box = QVBoxLayout()
 
         # içerikler
-        title = QLabel("<b>Enter link</b>")
+        title = QLabel("<center><h1>Youtube Video Downloader</center></h1>")
+        title2 = QLabel("<center><h2>Enter link</center></h2>")
         self.link = QLineEdit()
         self.link.setPlaceholderText("https://www.youtube.com/enterurl")
         buttonDownload = QPushButton("Download", self)
         buttonDownload.clicked.connect(self.download)
+        buttonDownload.setGeometry(50,50,50,50)
+        v_box.addWidget(title)
 
         # içeriklerin atanması
-        h_box.addWidget(title)
+        v_box.addWidget(title)
+        h_box.addWidget(title2)
         h_box.addWidget(self.link)
-        h_box.addWidget(buttonDownload)
-        widget.setLayout(h_box)
+        v_box.addLayout(h_box)
+        v_box.addWidget(buttonDownload)
+        widget.setLayout(v_box)
         self.setCentralWidget(widget)
 
     # pencere ve icon ayarları
@@ -44,19 +48,22 @@ class Window(QMainWindow):
         self.setWindowIcon(QIcon("eb.png"))
 
         # pencere boyutlandırma
-        self.setGeometry(250, 250, 600, 100)
-        self.setMaximumSize(800, 120)
-        self.setMinimumSize(500, 80)
+        self.setGeometry(250, 250, 400, 80)
 
     # indirme butonu aksiyon
     def download(self):
+        self.completed = 0
+        title = "Download Manager"
+        contentText = "İndirme Tamamlandı"
         url = self.link.text()
         # video kalilesi
-        res1080p = "1080p"
-        YouTube(url).streams.filter(res=res1080p).first().download()
+        res = "240p"
+        YouTube(url).streams.filter(res=res).first().download()
+        if (YouTube):
+            QMessageBox.information(self, title, contentText)
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    pencere = Window()
+    window = Window()
     sys.exit(app.exec())
