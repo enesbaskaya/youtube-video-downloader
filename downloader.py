@@ -1,3 +1,5 @@
+from datetime import time
+
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 import sys
@@ -52,13 +54,12 @@ class Window(QMainWindow):
 
     # indirme butonu aksiyon
     def download(self):
-        self.completed = 0
         title = "Download Manager"
-        contentText = "İndirme Tamamlandı"
+        contentText = "Download Complete!"
         url = self.link.text()
         # video kalilesi
         res = "240p"
-        YouTube(url).streams.filter(res=res).first().download()
+        video=YouTube(url).streams.filter(res=res).first().download()
         if (YouTube):
             QMessageBox.information(self, title, contentText)
 
