@@ -1,31 +1,33 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-import sys
 from pytube import YouTube
-import datetime
 from threading import Thread
-import os
-import logging
+import os, datetime, sys
+
 
 __author__ = "enesbaskaya"
 
 
 # some global values
 windowIcon = "eb.png"
-videoURL = ''
-videoMetadata = []
-video_dir = os.path.expanduser("~") + '\\Downloads\\YouTube Video Downloader\\' # get the absolute path of destination folder
+videoURL = ''           # to store the link of the video
+videoMetadata = []      # to store the video details
+user_dir = os.path.expanduser("~") + "\\"       # the "C:\Users\<user>" folder
+video_dir = 'Downloads\\YouTube Video Downloader\\' # get the absolute path of destination folder (inside the Downloads)
+
 
 
 
 def get_video(url):
-    """get the video from the url and return the data"""
-    # video object
-    yt = YouTube(url)
+    """get the video from the url and store the data in videoMetadata"""
+    yt = YouTube(url)   # video object
+    
     # video metadata
     title = yt.title
     duration = str(datetime.timedelta(seconds = yt.length))
     views = ("{:,}".format(yt.views))
+
+    # store the data now
     videoMetadata.append(title)
     videoMetadata.append(duration)
     videoMetadata.append(views)
@@ -33,19 +35,22 @@ def get_video(url):
 
 
 def download_video():
-    """Download the desired video in the specified directory"""
+    """Download the desired video in the specified directory using a new thread"""
     try:
-        try: os.mkdir(video_dir)          # create a temporary folder for PyMediaPlayer if not present
-        except Exception as e: pass     # generates error if already present
+        try: os.mkdir(user_dir + video_dir) # create new folder if not present
+        except Exception as e: pass         # generates error if already present
+
+        yt = YouTube(videoURL)                      # get the object
+        ys = yt.streams.get_highest_resolution()    # get the highest resolution video
+        ys.download(user_dir + video_dir)           # download at the specified directory
+
+    except Exception as e: print("Error in 'download_video' function\n", e)   # print if any error occurs
     
-        yt = YouTube(videoURL)
-        ys = yt.streams.get_highest_resolution()
-        #ys.download(video_dir)
-    except Exception as e: print("Error:", e)
-    
+
 
 
 class Window(QMainWindow):
+    """Main application class"""
     def __init__(self):
         super().__init__()
         self.setUI()
@@ -65,9 +70,10 @@ class Window(QMainWindow):
         title = QLabel("<center><h1>Youtube Video Downloader</center></h1>")
         enterLintText = QLabel("<center><h2>Enter link</center></h2>")
         self.link = QLineEdit()
-        self.link.setPlaceholderText("https://www.youtube.com/enterurl")
+        self.link.setPlaceholderText("https://www.youtu.be/video-id")
         buttonDownload = QPushButton("Download", self)
         buttonDownload.clicked.connect(self.download)
+        buttonDownload.setShortcut("Return")    # Shortcut for button
         buttonDownload.setGeometry(50, 50, 50, 50)
         v_box.addWidget(title)
 
@@ -94,8 +100,9 @@ class Window(QMainWindow):
 
     # indirme butonu aksiyon
     def download(self):
+        """Initiate the process when user clicks on the button"""
         global videoURL
-        url = videoURL = self.link.text()
+        url = videoURL = self.link.text()   # store the link of the video user entered
         
         try:
             # start video searching in a new thread
@@ -120,40 +127,46 @@ class Window(QMainWindow):
             conf_box.buttonClicked.connect(self.confirm_download)
             conf_box.exec_()
             
-        except Exception as e: print(e)
+        except Exception as e: print("Error in 'download' function:\n", e)
 
 
 
-    # Start downlaod only if confirmed
     def confirm_download(self, status):
-        """Download only if confirmed"""
+        """Start Download only if confirmed"""
         if status.text().lower() == "ok":
             # start video downloading in a new thread
             d = Thread(target=download_video)
             d.start()
-            
-            if d.is_alive(): print('Downloading')
+            if d.is_alive(): print('Downloading... Please Wait')
             else: print('An Error occured')
             d.join()
-            
-            # After its downloaded
-            contentText = "Download Complete!"
-            alert_box = QMessageBox()
-            alert_box.setIcon(QMessageBox.Information)
-            alert_box.setTitle(contentText)
-            alert_box.setInformativeText("Downloaded at: ", video_dir)
-            alert_box.setWindowTitle("YouTube Video Downloader")
-            alert_box.setStandardButtons(QMessageBox.Ok)
-            alert_box.setWindowIcon(QIcon(windowIcon))
-            alert_box.exec_()
 
-        
-        print(videoMetadata)
-        videoMetadata.clear()
-        print(videoMetadata)
 
-        
-            
+            try:
+                # After download, show confirmation box along with video location
+                contentText = "Download Complete!"
+                alert_box = QMessageBox()
+                alert_box.setIcon(QMessageBox.Information)
+                alert_box.setText(contentText)
+                alert_box.setInformativeText("Downloaded at:-\n{0}".format(video_dir))
+                alert_box.setWindowTitle("YouTube Video Downloader")
+                alert_box.addButton(QPushButton('Open Folder'), QMessageBox.YesRole)
+                alert_box.addButton(QPushButton('OK'), QMessageBox.NoRole)
+                alert_box.setWindowIcon(QIcon(windowIcon))
+                alert_box.buttonClicked.connect(self.open_downloads)
+                alert_box.exec_()
+            except Exception as e: print("Error in 'confirm_download' function", e)
+
+        else: print("Cancelled")
+                
+        global videoMetadata
+        videoMetadata = []      # reset the video data after use
+
+
+
+    def open_downloads(self, status):
+        """Open the download folder of videos"""
+        if status.text().lower() != "ok": os.startfile(user_dir + video_dir)
     
 
 if __name__ == "__main__":
